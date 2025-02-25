@@ -1,2 +1,1 @@
-# project100hours
-Project 100 Hours
+# Project 100 Hours
