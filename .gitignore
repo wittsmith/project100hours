@@ -1,0 +1,34 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# FastAPI Token and Credentials
+backend/token.json
+backend/credentials.json
+
+# Node.js
+frontend/node_modules/
+frontend/.env
+
+# Build directories
+frontend/build/
+dist/
+
+# Logs
+*.log
+
+# macOS system files
+.DS_Store
+
+# VSCode settings
+.vscode/
+
+# Environment files
+.env
+.env.local
+
+# Test coverage
+coverage/
