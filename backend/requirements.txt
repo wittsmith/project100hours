@@ -14,3 +14,4 @@ dnspython  # Sometimes required for certain email setups
 apscheduler
 requests  # If making HTTP requests (optional, but commonly needed)
 boto3
+uvicorn
