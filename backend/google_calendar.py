@@ -4,23 +4,40 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 import datetime
+import boto3
+import io
 
+ssm = boto3.client("ssm", region_name="us-east-1")  
 # Load environment variables
-load_dotenv()
+
+
+
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
+def get_ssm_parameter(param_name, with_decryption=True):
+    """Retrieve a secure parameter from AWS SSM Parameter Store."""
+    ssm = boto3.client("ssm", region_name="us-east-1")  # Change to your AWS region
+    response = ssm.get_parameter(Name=param_name, WithDecryption=with_decryption)
+    return response["Parameter"]["Value"]
+
+
+
 def get_google_credentials():
-    """Retrieve Google API credentials from token.json or generate new ones."""
+    """Retrieve Google API credentials from AWS SSM and use it directly."""
     creds = None
     token_path = 'token.json'
 
     if os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
     else:
-        flow = InstalledAppFlow.from_client_secrets_file(
-            os.getenv("GOOGLE_CREDENTIALS", "credentials.json"), SCOPES
-        )
+        # Fetch credentials JSON from AWS SSM
+        credentials_json = get_ssm_parameter("GOOGLE_CREDENTIALS")
+
+        # Convert the JSON string into a file-like object
+        credentials_stream = io.StringIO(credentials_json)
+
+        flow = InstalledAppFlow.from_client_secrets_file(credentials_stream, SCOPES)
         creds = flow.run_local_server(port=0)
 
         with open(token_path, "w") as token:

@@ -3,15 +3,22 @@ import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+import boto3
 
-# Load environment variables
-load_dotenv()
+# Boto3 method
 
-EMAIL_HOST = os.getenv("EMAIL_HOST")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
-EMAIL_USER = os.getenv("EMAIL_USER")
-EMAIL_PASS = os.getenv("EMAIL_PASS")
-EMAIL_FROM = os.getenv("EMAIL_FROM")  # Now using Amazon's SES default
+def get_secret(name):
+    """Retrieve secrets from AWS SSM Parameter Store."""
+    ssm = boto3.client('ssm', region_name="us-east-1")
+    response = ssm.get_parameter(Name=name, WithDecryption=True)
+    return response["Parameter"]["Value"]
+
+
+EMAIL_HOST = get_secret("EMAIL_HOST")
+EMAIL_PORT = int(get_secret("EMAIL_PORT"))
+EMAIL_USER = get_secret("EMAIL_USER")
+EMAIL_PASS = get_secret("EMAIL_PASS")
+EMAIL_FROM = get_secret("EMAIL_FROM")  # Now using Amazon's SES default
 
 def send_email_notification(to_email, subject, message):
     """Sends an email notification using Amazon SES."""
