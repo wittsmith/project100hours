@@ -1,11 +1,30 @@
 uvicorn==0.34.0
 fastapi==0.115.8
+# FastAPI & ASGI Server
+
+
+# Database & ORM
 SQLAlchemy
 pydantic
-passlib[bcrypt]
+passlib[bcrypt]  # If you have password hashing anywhere
 python-dotenv
+
+# Google API for OAuth & Calendar Integration
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
+
+# OpenAI API (For LLM Project Idea Generation)
 openai
+
+# Email Handling (Amazon SES / SMTP)
+smtplib  # Built-in, but leaving it for clarity
+email  # Python's built-in email module
+dnspython  # Sometimes required for certain email setups
+
+# Task Scheduling
+apscheduler
+
+# Miscellaneous Dependencies
+requests  # If making HTTP requests (optional, but commonly needed)
