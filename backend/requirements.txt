@@ -1,2 +1,10 @@
 uvicorn==0.34.0
 fastapi==0.115.8
+SQLAlchemy
+pydantic
+passlib[bcrypt]
+python-dotenv
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
