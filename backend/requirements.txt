@@ -9,7 +9,7 @@ google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
 openai
-email  # Python's built-in email module
+ # Python's built-in email module
 dnspython  # Sometimes required for certain email setups
 apscheduler
 requests  # If making HTTP requests (optional, but commonly needed)
