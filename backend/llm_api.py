@@ -28,7 +28,7 @@ def generate_project_idea(prompt):
             ],
             max_tokens=300
         )
-        return response["choices"][0]["message"]["content"]
+        return response.choices[0].message.content
 
     except Exception as e:
         return f"Error: {str(e)}"
