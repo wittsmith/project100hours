@@ -1,52 +1,44 @@
 import os
 import json
-import boto3
-import tempfile
 import datetime
-from google.oauth2.service_account import Credentials
+import boto3
+import io
+from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+
+SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 # AWS SSM Client
 ssm = boto3.client("ssm", region_name="us-east-1")
 
-SCOPES = ['https://www.googleapis.com/auth/calendar']
-
-def get_ssm_parameter(param_name, with_decryption=True):
-    """Retrieve a secure parameter from AWS SSM Parameter Store."""
-    try:
-        response = ssm.get_parameter(Name=param_name, WithDecryption=with_decryption)
-        return response["Parameter"]["Value"]
-    except Exception as e:
-        print(f"❌ Error fetching SSM parameter {param_name}: {e}")
-        return None
-
 def get_google_credentials():
-    """Retrieve Google API credentials from AWS SSM and load them correctly."""
-    try:
-        credentials_json = get_ssm_parameter("GOOGLE_CREDENTIALS")
-        if not credentials_json:
-            raise Exception("❌ Missing Google API credentials in SSM!")
+    """Retrieve Google API credentials via OAuth 2.0 instead of a service account."""
+    creds = None
+    token_path = "token.json"
 
-        # Write credentials to a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".json") as temp_cred_file:
-            temp_cred_file.write(credentials_json)
-            temp_cred_file_path = temp_cred_file.name
+    # Check if a token already exists
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
 
-        # Load credentials from temp file
-        credentials = Credentials.from_service_account_file(temp_cred_file_path, scopes=SCOPES)
+    # If no valid credentials are available, prompt the user to log in
+    if not creds or not creds.valid:
+        print("🔑 No valid credentials found. Starting OAuth login...")
+        flow = InstalledAppFlow.from_client_secrets_file("client_secret.json", SCOPES)
+        creds = flow.run_local_server(port=0)
 
-        print("✅ Successfully loaded Google API credentials.")
-        return credentials
+        # Save the credentials for next time
+        with open(token_path, "w") as token:
+            token.write(creds.to_json())
 
-    except Exception as e:
-        print(f"❌ Google Credentials Error: {e}")
-        return None
+    return creds
 
 def get_weekly_events(start_date=None, end_date=None):
-    """Fetches weekly events from Google Calendar."""
+    """Fetches weekly events from Google Calendar using OAuth 2.0."""
     creds = get_google_credentials()
+    
     if not creds:
-        return {"error": "Failed to load Google credentials"}
+        return {"error": "Failed to authenticate with Google"}
 
     try:
         service = build("calendar", "v3", credentials=creds)
@@ -104,28 +96,4 @@ def get_weekly_events(start_date=None, end_date=None):
 
     except Exception as e:
         print(f"❌ Google Calendar API Error: {e}")
-        return {"error": str(e)}
-
-def create_calendar_event(summary, start_time, end_time, description=""):
-    """Creates an event in Google Calendar."""
-    creds = get_google_credentials()
-    if not creds:
-        return {"error": "Failed to load Google credentials"}
-
-    try:
-        service = build("calendar", "v3", credentials=creds)
-
-        event = {
-            "summary": summary,
-            "description": description,
-            "start": {"dateTime": start_time, "timeZone": "America/New_York"},
-            "end": {"dateTime": end_time, "timeZone": "America/New_York"},
-        }
-
-        event = service.events().insert(calendarId="primary", body=event).execute()
-        print(f"✅ Created event: {event['htmlLink']}")
-        return event["htmlLink"]
-
-    except Exception as e:
-        print(f"❌ Google Calendar Event Creation Error: {e}")
         return {"error": str(e)}
