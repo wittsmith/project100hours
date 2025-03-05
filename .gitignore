@@ -5,6 +5,8 @@ __pycache__/
 *.pyo
 *.pyd
 
+frontend.zip
+
 # FastAPI Token and Credentials
 backend/token.json
 backend/credentials.json
@@ -32,3 +34,4 @@ dist/
 
 # Test coverage
 coverage/
+TODO.txt

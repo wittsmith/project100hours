@@ -17,7 +17,7 @@ const Home = () => {
     if (!newTask.trim()) return;
     const task = { action: newTask, date: new Date().toISOString().split("T")[0] };
     await addTask(task);
-    setTasks([...tasks, task]);  // Update UI optimistically
+    setTasks([...tasks, task]);  // Optimistic UI update
     setNewTask("");
   };
 

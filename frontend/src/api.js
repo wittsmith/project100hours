@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://3.86.163.231:8000"; // Replace with actual EC2 IP
+const API_BASE_URL = "http://3.86.163.231:8000"; // Replace with your EC2 IP
 
 async function fetchTasks() {
   try {
