@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 
 function createWindow() {
@@ -8,7 +8,7 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
-      contextIsolation: false,  // Allow JavaScript execution
+      contextIsolation: true,
     }
   });
 
@@ -16,7 +16,13 @@ function createWindow() {
     console.error("Failed to load React:", err);
   });
 
-  win.webContents.openDevTools(); // Open DevTools automatically
+  win.webContents.openDevTools(); // Open DevTools for debugging
 }
+
+// Handle messages from React
+ipcMain.on("message", (event, data) => {
+  console.log("📩 Received from React:", data); // Debugging line
+  event.reply("reply", "Hello from Electron! ✅"); // Send response to React
+});
 
 app.whenReady().then(createWindow);
