@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 
 function App() {
-  const [backendData, setBackendData] = useState(null);
+  const [message, setMessage] = useState("Waiting for Electron...");
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/')
-      .then(response => response.json())
-      .then(data => setBackendData(data.message))
-      .catch(error => console.error('Error fetching backend:', error));
+    if (window.electronAPI) {
+      window.electronAPI.receiveFromMain("reply", (data) => {
+        setMessage(data);
+      });
+
+      window.electronAPI.sendToMain("message", "Hello from React!");
+    }
   }, []);
 
   return (
-    <div>
+    <div style={{ textAlign: "center", padding: "20px" }}>
       <h1>Project 100 Hours</h1>
-      <p>Backend says: {backendData ? backendData : 'Loading...'}</p>
+      <p>Electron says: {message}</p>
     </div>
   );
 }

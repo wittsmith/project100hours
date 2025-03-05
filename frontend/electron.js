@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -6,12 +6,19 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: true
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false
     }
   });
 
-  win.loadURL('http://localhost:3000');  // We'll later bundle this.
+  win.loadURL('http://localhost:3000');
 }
+
+// Log messages when receiving from React
+ipcMain.on("message", (event, arg) => {
+  console.log("Received from React:", arg);
+  event.reply("reply", "Hello from Electron!");  // Send a reply back
+});
 
 app.whenReady().then(createWindow);
 
