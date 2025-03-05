@@ -20,10 +20,10 @@ openai.api_key = get_ssm_parameter("OPENAI_API_KEY")
 def generate_project_idea(prompt):
     """Generates project ideas and planning suggestions using GPT-4."""
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are an expert project planner helping users generate structured project ideas."},
+                {"role": "system", "content": "You are an expert project planner helping users generate structured project plans based upon the ideas given to you."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=300
