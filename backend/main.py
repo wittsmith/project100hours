@@ -109,7 +109,7 @@ from fastapi import FastAPI, HTTPException, Query
 from typing import Optional
 import google_calendar  # Import the new module
 
-app = FastAPI()
+
 
 @app.get("/")
 def read_root():
