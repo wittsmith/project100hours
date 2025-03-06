@@ -31,12 +31,14 @@ function TasksScreen() {
     <div>
       <h2>Tasks</h2>
       <ul>
-        {tasks.map((task) => (
-          <li key={task.id}>
-            {task.title} (Due: {task.due_date})
-            <button onClick={() => handleDeleteTask(task.id)}>Delete</button>
-          </li>
-        ))}
+      {tasks && tasks.length > 0 ? (
+        tasks.map(task => (
+          <div key={task.id}>{task.title}</div>
+        ))
+      ) : (
+        <p>No tasks available.</p>
+      )}
+
       </ul>
       <input 
         type="text" 

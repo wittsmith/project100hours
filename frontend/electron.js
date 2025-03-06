@@ -1,5 +1,13 @@
+require("dotenv").config({ path: "./frontend/.env" }); // ✅ Explicitly load from frontend
 const { app, BrowserWindow, ipcMain } = require("electron");
+const { google } = require("googleapis");
 const path = require("path");
+
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+
+console.log("✅ Loaded Google Client ID:", CLIENT_ID);
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -9,20 +17,10 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
-    }
+    },
   });
 
-  win.loadURL("http://localhost:3000").catch((err) => {
-    console.error("Failed to load React:", err);
-  });
-
-  win.webContents.openDevTools(); // Open DevTools for debugging
+  win.loadURL("http://localhost:3000");
 }
-
-// Handle messages from React
-ipcMain.on("message", (event, data) => {
-  console.log("📩 Received from React:", data); // Debugging line
-  event.reply("reply", "Hello from Electron! ✅"); // Send response to React
-});
 
 app.whenReady().then(createWindow);

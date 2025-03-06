@@ -1,67 +1,124 @@
 import React, { useEffect, useState } from "react";
-import { fetchProjects, fetchIWillTasks, fetchWeeklyCalendarEvents } from "../api";
+import {
+  fetchIWillTasks,
+  addIWillTask,
+  updateIWillTask,
+  fetchWeeklyCalendarEvents,
+} from "../api";
 
 function HomeScreen() {
-  const [projects, setProjects] = useState([]);
-  const [tasks, setTasks] = useState([]);
+  const [iWillTasks, setIWillTasks] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [calendarError, setCalendarError] = useState(null);
+  const [newIWill, setNewIWill] = useState({ action: "", date: "" });
 
-  // 🔹 Fetch projects, tasks, and calendar events automatically
+  // 🔹 Fetch "I Will" tasks and calendar events
   useEffect(() => {
     async function loadData() {
       try {
-        const projectsData = await fetchProjects();
-        const tasksData = await fetchIWillTasks();
-
+        const iWillData = await fetchIWillTasks();
+        console.log("✅ Fetched 'I Will' Tasks:", iWillData); // Debugging
+  
+        if (!Array.isArray(iWillData)) {
+          console.error("❌ API Error: 'I Will' response is not an array!", iWillData);
+          setIWillTasks([]);
+        } else {
+          setIWillTasks(iWillData);
+        }
+  
         // Get calendar events for the next 7 days
         const today = new Date();
         const startDate = today.toISOString().split("T")[0];
-        const endDate = new Date(today.setDate(today.getDate() + 7)).toISOString().split("T")[0];
-        
+        const endDate = new Date(today.setDate(today.getDate() + 7))
+          .toISOString()
+          .split("T")[0];
+  
         const calendarData = await fetchWeeklyCalendarEvents(startDate, endDate);
-
+  
         if (calendarData.error) {
-          setCalendarError(calendarData.error); // Display error message
+          setCalendarError(calendarData.error);
         } else {
           setCalendarEvents(calendarData);
         }
-
-        setProjects(projectsData);
-        setTasks(tasksData);
       } catch (error) {
         console.error("❌ Error loading data:", error);
       }
     }
-
+  
     loadData();
   }, []);
+  
+
+  // ✅ Add a new "I Will" task
+  const handleAddIWill = async () => {
+    if (!newIWill.action.trim() || !newIWill.date) return;
+
+    const iWillData = {
+      action: newIWill.action,
+      date: newIWill.date,
+      completed: false,
+    };
+
+    try {
+      const addedIWill = await addIWillTask(iWillData);
+      setIWillTasks([...iWillTasks, addedIWill]); // Update UI
+      setNewIWill({ action: "", date: "" }); // Clear input
+    } catch (error) {
+      console.error("❌ Error adding 'I Will' task:", error);
+    }
+  };
+
+  // ✅ Mark "I Will" as complete
+  const handleCompleteIWill = async (task) => {
+    const updatedTask = { ...task, completed: true };
+
+    try {
+      await updateIWillTask(task.id, updatedTask);
+      setIWillTasks(iWillTasks.map((t) => (t.id === task.id ? updatedTask : t))); // Update UI
+    } catch (error) {
+      console.error("❌ Error marking 'I Will' as complete:", error);
+    }
+  };
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
       <h2>Welcome to Project 100 Hours</h2>
-      <p>Manage your projects, tasks, and upcoming events.</p>
+      <p>Manage your commitments and upcoming events.</p>
 
-      {/* 🔹 List All Projects */}
-      <h3>Projects</h3>
-      {projects.length === 0 ? (
-        <p>No projects available.</p>
-      ) : (
-        <ul>
-          {projects.map((project) => (
-            <li key={project.id}>{project.name}</li>
-          ))}
-        </ul>
-      )}
+      {/* 🔹 Add New "I Will" Task */}
+      <h3>Add an "I Will" Task</h3>
+      <input
+        type="text"
+        placeholder="I will..."
+        value={newIWill.action}
+        onChange={(e) =>
+          setNewIWill((prev) => ({ ...prev, action: e.target.value }))
+        }
+      />
+      <input
+        type="date"
+        value={newIWill.date}
+        onChange={(e) =>
+          setNewIWill((prev) => ({ ...prev, date: e.target.value }))
+        }
+      />
+      <button onClick={handleAddIWill}>Add</button>
 
-      {/* 🔹 List All Tasks */}
-      <h3>Tasks</h3>
-      {tasks.length === 0 ? (
+      {/* 🔹 List All "I Will" Tasks */}
+      <h3>"I Will" Tasks</h3>
+      {iWillTasks.length === 0 ? (
         <p>No tasks available.</p>
       ) : (
         <ul>
-          {tasks.map((task) => (
-            <li key={task.id}>{task.action} (Due: {task.date})</li>
+          {iWillTasks.map((task) => (
+            <li key={task.id}>
+              {task.action} - {task.date}{" "}
+              {!task.completed && (
+                <button onClick={() => handleCompleteIWill(task)}>
+                  ✅ Complete
+                </button>
+              )}
+            </li>
           ))}
         </ul>
       )}
@@ -76,7 +133,7 @@ function HomeScreen() {
         <ul>
           {calendarEvents.map((event, index) => (
             <li key={index}>
-              {event.summary} - {event.start.dateTime || event.start.date}
+              {event.title} - {event.start.dateTime || event.start.date}
             </li>
           ))}
         </ul>

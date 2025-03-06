@@ -4,3 +4,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   sendToMain: (channel, data) => ipcRenderer.send(channel, data),
   receiveFromMain: (channel, callback) => ipcRenderer.on(channel, (_, data) => callback(data))
 });
+
+contextBridge.exposeInMainWorld("electronAPI", {
+  loginWithGoogle: () => ipcRenderer.invoke("loginWithGoogle"),
+});
